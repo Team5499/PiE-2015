@@ -1,6 +1,8 @@
 #pragma config(Sensor, in6,    lineTrackerLeft, sensorLineFollower)
 #pragma config(Sensor, in7,    lineTrackerRight, sensorLineFollower)
-#pragma config(Sensor, dgtl7,  panEnc,         sensorQuadEncoder)
+#pragma config(Sensor, dgtl6,  panBottomSwitch, sensorTouch)
+#pragma config(Sensor, dgtl7,  panSwitchFwd,   sensorTouch)
+#pragma config(Sensor, dgtl8,  panSwitchRev,   sensorTouch)
 #pragma config(Sensor, dgtl10, tableSwitch,    sensorTouch)
 #pragma config(Motor,  port1,           leftMotor,     tmotorVex393_HBridge, openLoop, reversed, driveLeft)
 #pragma config(Motor,  port2,           leftLinkMotor, tmotorVex393_MC29, openLoop, reversed, driveLeft)
@@ -48,6 +50,45 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
+void extendPan(){
+	if(SensorValue(panSwitchFwd) == 0){
+		motor[dustPanMotor] = 80; //is this too fast?
+	} else {
+		writeDebugStream("Pan is fully extended");
+	}
+}
+
+void retractPan(){
+	if(SensorValue(panSwitchRev) == 0){
+		motor[dustPanMotor] = -80; //is this too fast?
+	} else{
+		writeDebugStream("Pan is fully retracted");
+	}
+}
+
+/*Flips table by slowly going forward and raising the linkage*/
+void flipTable(){
+	int i = 0;
+	int startTime;
+	if(i == 0){
+		startTime = time1[T1];
+	}
+	while(true){
+		i = 1;
+		motor[leftMotor]  = 10;
+		motor[rightMotor] = 10;
+		motor[leftLinkMotor] = 30;
+		motor[rightLinkMotor] = 30;
+		if(time1[T1] - startTime == 2000 || vexRT[Btn5D]){ //2 secs //manual control over an infinite loop
+			motor[leftMotor] = 0;
+			motor[rightMotor] = 0;
+			motor[leftLinkMotor] = 0;
+			motor[rightLinkMotor] = 0;
+			break;
+		}
+	}
+}
+
 /**
 * Before game
 * All activities that occur before the competition starts
@@ -55,12 +96,9 @@
 **/
 void pre_auton()
 {
-	int final panEncFullExtend = 200; //if rotation of the shaft does not exceed 250 degs in total, can use a pot
-	int final panEncFullRetract = -200;
 	// Set bStopTasksBetweenModes to false if you want to keep user created tasks running between
 	// Autonomous and Tele-Op modes. You will need to manage all user created tasks if set to false.
 	bStopTasksBetweenModes = true;
-
 	clearTimer(T1); //it was spelled with "c" twice, while once with "C"
 }
 
@@ -71,28 +109,24 @@ task autonomous()
 {
 	//Create and set the threshold for the Line Tracking Sensors.
 	//LineTrackers return 0-4095, where high values are dark and low values are light.
-	int lfThreshold;
-	lfThreshold = 2500;
+	int lfThreshold = 2500;
 
 	//Loop forever.
 	while(true)
 	{
 		//Lower linkage to the floor and fully extend the pan at the start of auto
-		if(panSwitch == 0 || SensorValue(panEnc) < panEncFullExtend){
-			while(panSwitch == 0){
-				motor[leftLinkMotor] = -40;
-				motor[rightLinkMotor] = -40;
+		if(SensorValue[panBottomSwitch] == 0 || SensorValue(panSwitchFwd) == 0){
+			while(SensorValue(panBottomSwitch) == 0){
+				motor[leftLinkMotor] = -100;
+				motor[rightLinkMotor] = -100;
 			}
-			while(SensorValue(panEnc) < panEncFullExtend){
-				motor[dustPanMotor] = 40;
+			while(SensorValue(panSwitchFwd) == 0){
+				extendPan();
 			}
 		} else{
 			//If table switch is pressed (if a table has been found), drive forward slowly while rasing the linkage. This will raise the table
-			if(SensorValue(tableSwitch)){
-				motor[leftMotor]  = 10;
-				motor[rightMotor] = 10;
-				motor[leftLinkMotor] = 30;
-				motor[rightLinkMotor] = 30;
+			if(SensorValue(tableSwitch) == 1){
+				flipTable();
 			} else{
 				//If both sensors see dark...
 				if(SensorValue(lineTrackerLeft) > lfThreshold && SensorValue(lineTrackerRight) > lfThreshold) {
@@ -141,13 +175,13 @@ task usercontrol()
 		//4-Bar Linkage
 		//if button 5D is pressed, raise
 		if(vexRT[Btn5D] == 1){
-			motor[leftLinkMotor] = 80;
-			motor[rightLinkMotor] = 80;
+			motor[leftLinkMotor] = 100;
+			motor[rightLinkMotor] = 100;
 		}
 		//if button 6D is pressed, lower
 		else if (vexRT[Btn6D] == 1){
-			motor[leftLinkMotor] = -80;
-			motor[rightLinkMotor] = -80;
+			motor[leftLinkMotor] = -100;
+			motor[rightLinkMotor] = -100;
 		}
 		//otherwise, do not do anything
 		else{
@@ -157,15 +191,16 @@ task usercontrol()
 
 		//Dustpan
 		if(vexRT[Btn8R] == 1){ //change button according to what the driver wants
-			if(SensorValue(panEnc < panEncFullExtend)){
-				motor[dustPanMotor] = 80; //extend
-			}
+			extendPan();
 		} else if(vexRT[Btn8L]){
-			if(SensorValue(panEnc < panEncFullRetract)){
-				motor[dustPanMotor] = -80; //retract
-			}
+			retractPan();
 		} else {
 			motor[dustPanMotor] = 0;
+		}
+
+		//flip table automation
+		if(vexRT[Btn7D]){
+			flipTable();
 		}
 	}
 }
