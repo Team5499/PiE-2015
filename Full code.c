@@ -1,3 +1,4 @@
+#pragma config(Sensor, in5,    linkPot,        sensorPotentiometer)
 #pragma config(Sensor, in6,    lineTrackerLeft, sensorLineFollower)
 #pragma config(Sensor, in7,    lineTrackerRight, sensorLineFollower)
 #pragma config(Sensor, dgtl6,  panBottomSwitch, sensorTouch)
@@ -89,6 +90,20 @@ void flipTable(){
 	}
 }
 
+void raiseLinkage(){
+	if(SensorValue(linkPot) < 135){
+		motor[leftLinkMotor] = 100;//is this in percent?
+		motor[rightLinkMotor] = 80;
+	}
+}
+
+void lowerLinkage(){
+	if(SensorValue(linkPot) > 0){
+		motor[leftLinkMotor] = -100;
+		motor[rightLinkMotor] = -100;
+	}
+}
+
 /**
 * Before game
 * All activities that occur before the competition starts
@@ -117,8 +132,7 @@ task autonomous()
 		//Lower linkage to the floor and fully extend the pan at the start of auto
 		if(SensorValue[panBottomSwitch] == 0 || SensorValue(panSwitchFwd) == 0){
 			while(SensorValue(panBottomSwitch) == 0){
-				motor[leftLinkMotor] = -100;
-				motor[rightLinkMotor] = -100;
+				lowerLinkage();
 			}
 			while(SensorValue(panSwitchFwd) == 0){
 				extendPan();
@@ -175,13 +189,11 @@ task usercontrol()
 		//4-Bar Linkage
 		//if button 5D is pressed, raise
 		if(vexRT[Btn5D] == 1){
-			motor[leftLinkMotor] = 100;
-			motor[rightLinkMotor] = 100;
+			raiseLinkage();
 		}
 		//if button 6D is pressed, lower
 		else if (vexRT[Btn6D] == 1){
-			motor[leftLinkMotor] = -100;
-			motor[rightLinkMotor] = -100;
+			lowerLinkage();
 		}
 		//otherwise, do not do anything
 		else{
