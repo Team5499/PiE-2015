@@ -52,6 +52,9 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * extends the pan if the limit switch is not pressed
+**/
 void extendPan(){
 	if(SensorValue(panSwitchFwd) == 0){
 		motor[dustPanMotor] = 80; //is this too fast?
@@ -60,6 +63,9 @@ void extendPan(){
 	}
 }
 
+/**
+ * retracts the pan if the limit switch is not pressed
+**/
 void retractPan(){
 	if(SensorValue(panSwitchRev) == 0){
 		motor[dustPanMotor] = -80; //is this too fast?
@@ -68,26 +74,34 @@ void retractPan(){
 	}
 }
 
+/**
+ * raises linkage if the pot is not at the upper limit
+**/
 void raiseLinkage(){
-	if(SensorValue(linkPot) < 135){
-		motor[leftLinkMotor] 	= 100;//is this in percent?
-		motor[rightLinkMotor] = 100;
+	if(SensorValue(linkPot) < 135){ //250 is max
+		motor[leftLinkMotor] 	= 70;//is this in percent?
+		motor[rightLinkMotor] = 70;
 	}
 }
 
+/**
+ * lowers linkage if the pot is not at the upper limit
+**/
 void lowerLinkage(){
 	if(SensorValue(linkPot) > 0){
-		motor[leftLinkMotor] 	= -100;
-		motor[rightLinkMotor] = -100;
+		motor[leftLinkMotor] 	= -70;
+		motor[rightLinkMotor] = -70;
 	}
 }
 
-/*Flips table by slowly going forward and raising the linkage*/
+/**
+ * Flips table by slowly going forward and raising the linkage for either 2 secs or until btn8d is pressed, whichever comes first.
+**/
 void flipTable(){
-	int i = 0;
+	int i = 0; //changes with the first loop of the while loop
 	int startTime;
 	if(i == 0){
-		startTime = time1[T1];
+		startTime = time1[T1]; //keeps start time without having to clear a timer
 	}
 	while(true){
 		i = 1;
