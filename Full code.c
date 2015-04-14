@@ -53,7 +53,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * extends the pan if the limit switch is not pressed
+ * Variables
+**/
+int desLinkPos;
+int upLinkLim;
+int lowLinkLim;
+
+/**
+* extends the pan if the limit switch is not pressed
 **/
 void extendPan(){
 	if(SensorValue(panSwitchFwd) == 0){
@@ -75,27 +82,45 @@ void retractPan(){
 }
 
 /**
- * raises linkage if the pot is not at the upper limit
+ * Moves the linkage to the desired position. There may be issues with it overshooting and oscilating a lot before settling.
+**/
+void moveLinkage(int desiredPos){
+	if (desiredPos < SensorValue(linkPot) && (desiredPos < upLinkLim || desiredPos > lowLinkLim)){
+		while(SensorValue(linkPot) != desiredPos){
+			motor[leftLinkMotor] = 50;
+			motor[rightLinkMotor] = 50;
+		}
+	}
+	if (desiredPos > SensorValue(linkPot) && (desiredPos < upLinkLim || desiredPos > lowLinkLim)){
+		while(SensorValue(linkPot) != desiredPos){
+			motor[leftLinkMotor] = -50;
+			motor[rightLinkMotor] = -50;
+		}
+	}
+}
+
+/**
+* raises linkage if the pot is not at the upper limit
 **/
 void raiseLinkage(){
-	if(SensorValue(linkPot) < 135){ //250 is max
+	if(SensorValue(linkPot) < upLinkLim){ //250 is max
 		motor[leftLinkMotor] 	= 70;//is this in percent?
 		motor[rightLinkMotor] = 70;
 	}
 }
 
 /**
- * lowers linkage if the pot is not at the upper limit
+* lowers linkage if the pot is not at the upper limit
 **/
 void lowerLinkage(){
-	if(SensorValue(linkPot) > 0){
+	if(SensorValue(linkPot) > lowLinkLim){
 		motor[leftLinkMotor] 	= -70;
 		motor[rightLinkMotor] = -70;
 	}
 }
 
 /**
- * Flips table by slowly going forward and raising the linkage for either 2 secs or until btn8d is pressed, whichever comes first.
+* Flips table by slowly going forward and raising the linkage for either 2 secs or until btn8d is pressed, whichever comes first.
 **/
 void flipTable(){
 	int i = 0; //changes with the first loop of the while loop
@@ -133,6 +158,9 @@ void pre_auton() {
 	// Autonomous and Tele-Op modes. You will need to manage all user created tasks if set to false.
 	bStopTasksBetweenModes = true;
 	clearTimer(T1); //it was spelled with "c" twice, while once with "C"
+	desLinkPos = 0;
+	upLinkLim = 135;
+	lowLinkLim = 0;
 }
 
 /**
@@ -149,7 +177,6 @@ task autonomous() {
 		if(SensorValue[linkPot] > 0 || SensorValue(panSwitchFwd) == 0){
 			lowerLinkage();
 			extendPan();
-			} else{
 			//If table switch is pressed (if a table has been found), drive forward slowly while rasing the linkage. This will theoretically raise the table
 			if(SensorValue(tableSwitch) == 1){
 				flipTable();
@@ -209,11 +236,6 @@ task usercontrol() {
 		//if button 6D is pressed, lower
 		else if (vexRT[Btn6D] == 1){
 			lowerLinkage();
-		}
-		//otherwise, do not do anything
-		else{
-			motor[leftLinkMotor] = 0;
-			motor[rightLinkMotor] = 0;
 		}
 
 		//Dustpan
