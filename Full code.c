@@ -53,7 +53,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Variables
+* Variables
 **/
 int desLinkPos;
 int upLinkLim;
@@ -71,7 +71,7 @@ void extendPan(){
 }
 
 /**
- * retracts the pan if the limit switch is not pressed
+* retracts the pan if the limit switch is not pressed
 **/
 void retractPan(){
 	if(SensorValue(panSwitchRev) == 0){
@@ -82,16 +82,16 @@ void retractPan(){
 }
 
 /**
- * Moves the linkage to the desired position. There may be issues with it overshooting and oscilating a lot before settling.
+* Moves the linkage to the desired position. There may be issues with it overshooting and oscilating a lot before settling.
 **/
 void moveLinkage(int desiredPos){
-	if (desiredPos < SensorValue(linkPot) && (desiredPos <= upLinkLim || desiredPos => lowLinkLim)){
+	if (desiredPos < SensorValue(linkPot) && (desiredPos <= upLinkLim || desiredPos >= lowLinkLim)){
 		while(SensorValue(linkPot) != desiredPos){
 			motor[leftLinkMotor] = 50;
 			motor[rightLinkMotor] = 50;
 		}
 	}
-	if (desiredPos > SensorValue(linkPot) && (desiredPos <= upLinkLim || desiredPos => lowLinkLim)){
+	if (desiredPos > SensorValue(linkPot) && (desiredPos <= upLinkLim || desiredPos >= lowLinkLim)){
 		while(SensorValue(linkPot) != desiredPos){
 			motor[leftLinkMotor] = -50;
 			motor[rightLinkMotor] = -50;
@@ -114,7 +114,7 @@ void raiseLinkage(){
 **/
 void lowerLinkage(){
 	if(SensorValue(linkPot) > lowLinkLim){
-		motor[leftLinkMotor] 	= -70;
+		motor[leftLinkMotor] 	= -70; //is this too fast
 		motor[rightLinkMotor] = -70;
 	}
 }
@@ -178,7 +178,7 @@ task autonomous() {
 			//moveLinkage(lowLinkLim);
 			lowerLinkage();
 			extendPan();
-		} else{
+			} else{
 			//If table switch is pressed (if a table has been found), drive forward slowly while rasing the linkage. This will theoretically raise the table
 			if(SensorValue(tableSwitch) == 1){
 				flipTable();
@@ -226,7 +226,7 @@ task autonomous() {
 task usercontrol() {
 	while (true) { //User control code goes in this while loop
 		writeDebugStream("SensorValue(linkPot) pot measure in degs: %i", SensorValue(linkPot));
-		writeDebugStream("sensorValue[linkPot] pot measure in degs: %i", sensorValue[linkPot]);
+		writeDebugStream("SensorValue[linkPot] pot measure in degs: %i", sensorValue[linkPot]);
 
 		motor[leftMotor1]  = vexRT[Ch3];   // Left Joystick Y value
 		motor[leftMotor2]  = vexRT[Ch3];
@@ -251,11 +251,11 @@ task usercontrol() {
 
 		//Dustpan
 		if(vexRT[Btn5U] == 1){ //change button according to what the driver wants
-				retractPan();
-			} else if(vexRT[Btn6U]==1){
-				extendPan();
+			retractPan();
+			} else if(vexRT[Btn6U] == 1){
+			extendPan();
 			} else {
-				motor[dustPanMotor] = 0;
+			motor[dustPanMotor] = 0;
 		}
 
 		//flip table automation
