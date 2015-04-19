@@ -6,7 +6,7 @@
 #pragma config(Sensor, dgtl3,  tableSwitch,    sensorTouch)
 #pragma config(Motor,  port1,           leftMotor1,    tmotorVex393_HBridge, openLoop, reversed, driveLeft)
 #pragma config(Motor,  port2,           leftMotor2,    tmotorVex393_MC29, openLoop, driveLeft)
-#pragma config(Motor,  port3,           leftLinkMotor, tmotorVex393_MC29, openLoop, reversed, driveLeft)
+#pragma config(Motor,  port3,           leftLinkMotor, tmotorVex393_MC29, openLoop, driveLeft)
 #pragma config(Motor,  port4,           dustPanMotor,  tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           rightLinkMotor, tmotorVex393_MC29, openLoop, reversed, driveRight)
 #pragma config(Motor,  port9,           rightMotor2,   tmotorVex393_MC29, openLoop, reversed, driveRight)
