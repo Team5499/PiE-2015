@@ -327,11 +327,19 @@ void backupAuto(){
 		startTime = time1[T1]; //keeps start time without having to clear a timer
 		i = 1;
 	}
-	if(time1[T1] - startTime <= 3000){
-		motor[leftMotor1]  		= 127;
-		motor[leftMotor2]  		= 127;
-		motor[rightMotor1] 		= 127;
-		motor[rightMotor2] 		= 127;
+	if(time1[T1] - startTime <= 4000){
+		//int right = 1;
+		//if(SensorValue(sideSelSwitch) == right){
+			motor[leftMotor1]  		= 127;
+			motor[leftMotor2]  		= 127;
+			motor[rightMotor1] 		= 110;
+			motor[rightMotor2] 		= 110;
+		//} else {
+		//	motor[leftMotor1]  		= 110;
+		//	motor[leftMotor2]  		= 110;
+		//	motor[rightMotor1] 		= 127;
+		//	motor[rightMotor2] 		= 127;
+		//}
 	}else {
 		stopAllMotors();
 	}
@@ -347,7 +355,7 @@ void pre_auton() {
 	// Autonomous and Tele-Op modes. You will need to manage all user created tasks if set to false.
 	bStopTasksBetweenModes = true;
 	clearTimer(T1); //it was spelled with "c" twice, while once with "C"'
-	clearTimer(T1);
+	clearTimer(T2);
 	i = 0;
 	tablei = 0;
 
@@ -361,8 +369,8 @@ void pre_auton() {
 **/
 task autonomous() {
 	while(true){
-		writeDebugStreamLine("Start of Match");
-		writeDebugStreamLine("AUTO");
+		//writeDebugStreamLine("Start of Match");
+		//writeDebugStreamLine("AUTO");
 		writeDebugStreamLine("Before BackupAuto %i", i);
 		//idealAuto();
 		//semiIdealAuto();
@@ -371,8 +379,8 @@ task autonomous() {
 		writeDebugStreamLine("%i", i);
 		writeDebugStreamLine("");
 
-		writeDebugStreamLine("%d Left line tracker: %d", time1[T2], SensorValue(lineTrackerLeft));
-		writeDebugStreamLine("%d Right line tracker: %d", time1[T2], SensorValue(lineTrackerRight));
+		//writeDebugStreamLine("%d Left line tracker: %d", time1[T2], SensorValue(lineTrackerLeft));
+		//writeDebugStreamLine("%d Right line tracker: %d", time1[T2], SensorValue(lineTrackerRight));
 
 		if(vexRT[Btn8R] == 1){
 			break;
@@ -385,10 +393,10 @@ task autonomous() {
 **/
 task usercontrol() {
 	while (true) { //User control code goes in this while loop
-		writeDebugStreamLine("");
-		writeDebugStreamLine("TELEOP");
-		writeDebugStreamLine("%d Left line tracker: %d", time1[T2], SensorValue(lineTrackerLeft));
-		writeDebugStreamLine("%d Right line tracker: %d", time1[T2], SensorValue(lineTrackerRight));
+		//writeDebugStreamLine("");
+		//writeDebugStreamLine("TELEOP");
+		//writeDebugStreamLine("%d Left line tracker: %d", time1[T2], SensorValue(lineTrackerLeft));
+		//writeDebugStreamLine("%d Right line tracker: %d", time1[T2], SensorValue(lineTrackerRight));
 
 		motor[leftMotor1]  = vexRT[Ch3];   // Left Joystick Y value
 		motor[leftMotor2]  = vexRT[Ch3];
@@ -415,9 +423,9 @@ task usercontrol() {
 		}
 
 		//Dustpan
-		if(vexRT[Btn5U] == 1){
+		if(vexRT[Btn6U] == 1){
 			retractPan();
-			} else if(vexRT[Btn6U] == 1){
+			} else if(vexRT[Btn5U] == 1){
 			extendPan();
 			} else {
 			motor[dustPanMotor] = 0;
